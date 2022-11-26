@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-// viewsディレクトリ下のファイルを全て変数に格納する
-//
 //go:embed asset/*
 var asset embed.FS
 
