@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi Image Converter Online</title>
+  <link rel="stylesheet" type="text/css" href="/asset/css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <img src="/asset/img/icon-image.png">
+      <h1 class="header-logo">Multi Image Converter Online</h1>
+      <a href="/">Go to PDF to Image Converter</a>
+    </div>
+  </header>
+  <main>
+    <form enctype="multipart/form-data" action="/upload-multi" method="POST">
+      <input type="file" style="width:100%;font-size:16px;" name="files" accept="image/png, image/gif, image/jpeg, image/webp" multiple><br>
+      <p>Convert to
+        <select style="font-size:16px;" name="select">
+          <option value="webp">WebP</option>
+          <option value="png">PNG</option>
+          <option value="jpeg">JPEG</option>
+        </select>
+      </p>
+      <button class="submit" type="submit">Submit</button>
+    </form>
+  </main>
+</body>
+</html>
