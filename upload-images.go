@@ -22,19 +22,19 @@ func UploadImagesHandler(w http.ResponseWriter, r *http.Request) {
 	defer mw.Destroy()
 
 	if r.Method != "POST" {
-		http.Error(w, "許可されていないメソッドです", http.StatusMethodNotAllowed)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, MaxUploadSize)
 	if err := r.ParseMultipartForm(MaxUploadSize); err != nil {
-		http.Error(w, "アップロードされたファイルが大きすぎます。100MB以下のファイルを選択してください", http.StatusBadRequest)
+		http.Error(w, "Upload size is too big. Please upload up to 30MB.", http.StatusBadRequest)
 	}
 
 	// フォームで選択された出力フォーマット（WebP/PNG/JPEG）に設定する
 	outputImageFormat := r.FormValue("select")
 	if outputImageFormat != "webp" && outputImageFormat != "png" && outputImageFormat != "jpeg" {
-		http.Error(w, "許可されていない出力フォーマットです。", http.StatusBadRequest)
+		http.Error(w, "Output format is not allowed.", http.StatusBadRequest)
 		return
 	}
 
@@ -60,7 +60,7 @@ func UploadImagesHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			mimeType := http.DetectContentType(b)
 			if mimeType != "image/jpeg" && mimeType != "image/png" && mimeType != "image/gif" && mimeType != "image/webp" {
-				http.Error(w, "許可されていないファイルタイプです。イメージファイルをアップロードしてください", http.StatusBadRequest)
+				http.Error(w, "MIME type not allowed. Please upload a image.", http.StatusBadRequest)
 				return
 			}
 			if err := mw.ReadImageBlob(b); err != nil {

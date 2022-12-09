@@ -17,7 +17,7 @@ import (
 const (
 	KB            = 1000
 	MB            = 1000 * KB
-	MaxUploadSize = 100 * MB
+	MaxUploadSize = 30 * MB
 )
 
 func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,13 +28,13 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	defer mw.Destroy()
 
 	if r.Method != "POST" {
-		http.Error(w, "許可されていないメソッドです", http.StatusMethodNotAllowed)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, MaxUploadSize)
 	if err := r.ParseMultipartForm(MaxUploadSize); err != nil {
-		http.Error(w, "アップロードされたファイルが大きすぎます。100MB以下のファイルを選択してください", http.StatusBadRequest)
+		http.Error(w, "Upload size is too big. Please upload up to 30MB.", http.StatusBadRequest)
 	}
 
 	file, fileHeader, err := r.FormFile("file")
@@ -62,7 +62,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	mimeType := http.DetectContentType(bytes)
 	if mimeType != "application/pdf" {
-		http.Error(w, "許可されていないファイルタイプです。PDFをアップロードしてください", http.StatusBadRequest)
+		http.Error(w, "MIME type not allowed. Please upload a PDF.", http.StatusBadRequest)
 		return
 	}
 
@@ -78,7 +78,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	// フォームで選択された出力フォーマット（WebP/PNG/JPEG）に設定する
 	outputImageFormat := r.FormValue("select")
 	if outputImageFormat != "webp" && outputImageFormat != "png" && outputImageFormat != "jpeg" {
-		http.Error(w, "許可されていない出力フォーマットです。", http.StatusBadRequest)
+		http.Error(w, "Output format is not allowed.", http.StatusBadRequest)
 		return
 	}
 	if err := mw.SetImageFormat(outputImageFormat); err != nil {
