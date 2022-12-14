@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 //go:embed asset/*
@@ -20,8 +21,13 @@ func main() {
 
 	mux.Handle("/asset/", http.FileServer(http.FS(asset)))
 
+	srv := &http.Server{
+		ReadTimeout: 1 * time.Minute,
+		Handler:     mux,
+		Addr:        ":8080",
+	}
 	fmt.Println("Server is running on port 8080.")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }

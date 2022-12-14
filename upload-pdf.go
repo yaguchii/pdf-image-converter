@@ -48,7 +48,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 
 	outImageFilePath := fmt.Sprintf("%s", uuid.New().String())
 	if err := os.MkdirAll(outImageFilePath, os.ModePerm); err != nil {
-		panic(err)
+		log.Fatal("failed to make directory.", err)
 	}
 	defer os.RemoveAll(outImageFilePath)
 
@@ -104,7 +104,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 
 		// 画像をZipに追加する
 		if err := addToZip(outFilePath, zipWriter); err != nil {
-			panic(err)
+			log.Fatal("failed to adding zip.", err)
 		}
 	}
 
