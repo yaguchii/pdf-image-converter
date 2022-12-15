@@ -25,7 +25,8 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	defer imagick.Terminate()
 
 	mw := imagick.NewMagickWand()
-	defer mw.Destroy()
+	dw := imagick.NewDrawingWand()
+	pw := imagick.NewPixelWand()
 
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -85,6 +86,8 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("failed at SetImageFormat.", err)
 	}
 
+	pageNumberPosition := r.FormValue("page-number")
+
 	zipWriter := zip.NewWriter(w)
 	defer zipWriter.Close()
 
@@ -97,6 +100,37 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 
 		fileName := strings.TrimSuffix(fileHeader.Filename, filepath.Ext(fileHeader.Filename))
 		outFilePath := fmt.Sprintf("%s/%d_%s.%s", outImageFilePath, i+1, fileName, outputImageFormat)
+
+		if pageNumberPosition != "none" {
+			dw.Clear()
+
+			// フォントサイズを設定
+			dw.SetFontSize(20)
+
+			// 書き込みの色を設定
+			if ok := pw.SetColor("black"); !ok {
+				log.Fatal("invalid color string")
+			}
+			dw.SetFillColor(pw)
+
+			// 画面下中央に配置
+			switch pageNumberPosition {
+			case "bottom-center":
+				dw.SetGravity(imagick.GRAVITY_SOUTH)
+			case "bottom-right":
+				dw.SetGravity(imagick.GRAVITY_SOUTH_EAST)
+			case "bottom-left":
+				dw.SetGravity(imagick.GRAVITY_SOUTH_WEST)
+			}
+
+			// テキストを書き込み
+			dw.Annotation(0, 0, fmt.Sprintf(" %d / %d ", i+1, numberOfImages))
+			// 画像に反映
+			if err := mw.DrawImage(dw); err != nil {
+				log.Fatal(err)
+			}
+		}
+
 		// 画像を出力する
 		if err := mw.WriteImage(outFilePath); err != nil {
 			log.Fatal("failed at WriteImage.", err)
