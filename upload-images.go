@@ -21,7 +21,7 @@ func UploadImagesHandler(w http.ResponseWriter, r *http.Request) {
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -31,7 +31,7 @@ func UploadImagesHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Upload size is too big. Please upload up to 30MB.", http.StatusBadRequest)
 	}
 
-	// フォームで選択された出力フォーマット（WebP/PNG/JPEG）に設定する
+	// フォームで選択された出力フォーマット（WebP or PNG or JPEG）を設定する
 	outputImageFormat := r.FormValue("select")
 	if outputImageFormat != "webp" && outputImageFormat != "png" && outputImageFormat != "jpeg" {
 		http.Error(w, "Output format is not allowed.", http.StatusBadRequest)
