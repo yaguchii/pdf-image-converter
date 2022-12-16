@@ -17,7 +17,7 @@ import (
 const (
 	KB            = 1000
 	MB            = 1000 * KB
-	MaxUploadSize = 30 * MB
+	MaxUploadSize = 50 * MB
 )
 
 func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,14 +28,14 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	dw := imagick.NewDrawingWand()
 	pw := imagick.NewPixelWand()
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, MaxUploadSize)
 	if err := r.ParseMultipartForm(MaxUploadSize); err != nil {
-		http.Error(w, "Upload size is too big. Please upload up to 30MB.", http.StatusBadRequest)
+		http.Error(w, "Upload size is too big. Please upload up to 50MB.", http.StatusBadRequest)
 	}
 
 	file, fileHeader, err := r.FormFile("file")
@@ -76,7 +76,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	numberOfImages := mw.GetNumberImages()
 	log.Println("number of images: ", numberOfImages)
 
-	// フォームで選択された出力フォーマット（WebP/PNG/JPEG）に設定する
+	// フォームで選択された出力フォーマット（WebP or PNG or JPEG）を設定する
 	outputImageFormat := r.FormValue("select")
 	if outputImageFormat != "webp" && outputImageFormat != "png" && outputImageFormat != "jpeg" {
 		http.Error(w, "Output format is not allowed.", http.StatusBadRequest)
@@ -86,6 +86,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("failed at SetImageFormat.", err)
 	}
 
+	fileName := strings.TrimSuffix(fileHeader.Filename, filepath.Ext(fileHeader.Filename))
 	pageNumberPosition := r.FormValue("page-number")
 
 	zipWriter := zip.NewWriter(w)
@@ -98,9 +99,10 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		fileName := strings.TrimSuffix(fileHeader.Filename, filepath.Ext(fileHeader.Filename))
-		outFilePath := fmt.Sprintf("%s/%d_%s.%s", outImageFilePath, i+1, fileName, outputImageFormat)
+		currentPageNumber := i + 1
+		outFilePath := fmt.Sprintf("%s/%d_%s.%s", outImageFilePath, currentPageNumber, fileName, outputImageFormat)
 
+		// ページ番号を画像に付与する
 		if pageNumberPosition != "none" {
 			dw.Clear()
 
@@ -113,7 +115,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			dw.SetFillColor(pw)
 
-			// 画面下中央に配置
+			// フォームで選択された配置位置を指定する
 			switch pageNumberPosition {
 			case "bottom-center":
 				dw.SetGravity(imagick.GRAVITY_SOUTH)
@@ -124,7 +126,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// テキストを書き込み
-			dw.Annotation(0, 0, fmt.Sprintf(" %d / %d ", i+1, numberOfImages))
+			dw.Annotation(0, 0, fmt.Sprintf(" %d / %d ", currentPageNumber, numberOfImages))
 			// 画像に反映
 			if err := mw.DrawImage(dw); err != nil {
 				log.Fatal(err)
@@ -138,7 +140,7 @@ func UploadPDFHandler(w http.ResponseWriter, r *http.Request) {
 
 		// 画像をZipに追加する
 		if err := addToZip(outFilePath, zipWriter); err != nil {
-			log.Fatal("failed to adding zip.", err)
+			log.Fatal("failed to add zip.", err)
 		}
 	}
 
