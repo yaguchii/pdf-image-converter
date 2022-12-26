@@ -9,7 +9,7 @@
 <body>
   <header class="header">
     <div class="container">
-      <img src="/asset/img/icon-pdf.png">
+      <img src="/asset/img/icon-pdf.png" alt="icon">
       <h1 class="header-logo">PDF to Image Converter Online</h1>
       <a href="/multi">Go to Multi Image Converter</a>
     </div>
@@ -17,15 +17,17 @@
   <main>
     <form enctype="multipart/form-data" action="/upload" method="POST">
       <input type="file" style="width:100%;font-size:16px;" name="file" accept=".pdf" required><br>
-      <p>Select output format:
-        <select style="font-size:16px;" name="select">
+      <p>
+        <label for="format-select">Choose format:</label>
+        <select style="font-size:16px;" name="select" id="format-select">
           <option value="webp">WebP</option>
           <option value="png">PNG</option>
           <option value="jpeg">JPEG</option>
         </select>
       </p>
-      <p>Insert page numbers:
-        <select style="font-size:16px;" name="page-number">
+      <p>
+        <label for="page-num-select">Choose page number location:</label>
+        <select style="font-size:16px;" name="page-number" id="page-num-select">
           <option value="none">none</option>
           <option value="bottom-center">bottom-center</option>
           <option value="bottom-right">bottom-right</option>
