@@ -1,21 +1,13 @@
 FROM golang:1.19
 
-# Ignore APT warnings about not having a TTY
-ENV DEBIAN_FRONTEND noninteractive
-
 # install build essentials
-RUN apt-get update && \
-    apt-get install -y wget build-essential pkg-config --no-install-recommends
-
-# Install ImageMagick deps
-RUN apt-get -q -y install libjpeg-dev libpng-dev libwebp-dev libtiff-dev \
-    libgif-dev libx11-dev --no-install-recommends
-
-# See: https://stackoverflow.com/questions/53569383/imagick-fails-to-execute-gs-command
-RUN apt-get install -y ghostscript-x
-
-# See: https://askubuntu.com/questions/251950/imagemagick-convert-cant-convert-to-webp
-RUN apt-get install -y webp
+RUN apt-get upgrade  \
+    && apt-get update  \
+    && apt-get install -y wget build-essential pkg-config --no-install-recommends \
+    libjpeg-dev libpng-dev libwebp-dev libtiff-dev libgif-dev libx11-dev --no-install-recommends \
+    ghostscript-x webp \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV IMAGEMAGICK_VERSION=7.0.8-11
 
